@@ -28,5 +28,15 @@ class Lantern:
 
 
     async def process_command(self, command: str, metadata: str | None = None) -> None:
-        if command == "ON":
+        if command == 'ON':
             print('Lantern is on')
+        elif command == 'OFF':
+            print('Lantern is off')
+            await self.send_command('OFF')
+            self.writer.close()
+            await self.writer.wait_closed()
+        elif command == 'COLOR':
+            self.color = metadata
+            print(f'Lantern color now is {self.color}')
+        else:
+            print("Can't process unknown command" )
