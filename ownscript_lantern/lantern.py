@@ -25,3 +25,8 @@ class Lantern:
         message = json.dumps(data).encode()
         self.writer.write(message)
         await self.writer.drain()
+
+
+    async def process_command(self, command: str, metadata: str | None = None) -> None:
+        if command == "ON":
+            print('Lantern is on')
