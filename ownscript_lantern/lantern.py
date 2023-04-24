@@ -8,59 +8,64 @@ class Lantern:
     host: str = field(default='127.0.0.1', repr=True)
     port: int = field(default=9999, repr=True)
     color: str = field(default='White', repr=True)
-    reader: asyncio.StreamReader | None  = field(default=None, repr=False)
-    writer: asyncio.StreamWriter | None = field(default=None, repr=False)
 
 
-    async def connect(self):
-        self.reader, self.writer = await asyncio.open_connection(host=self.host, port=self.port)
+    async def send_message(self, writer: asyncio.StreamWriter, message: str) -> None:
+        '''
+        Method for sending messages to client
+        '''
+
+        writer.write(message.encode())
+        await writer.drain()
 
 
-    async def send_command(self, command: str, metadata: str | None = None) -> None:
-        data = {
-            'command': command,
-            'metadata': metadata
-        }
+    async def process_command(self, writer: asyncio.StreamWriter,
+                              command: str, metadata: str | None = None) -> None:
+        '''
+        Command processing method
+        '''
 
-        message = json.dumps(data).encode()
-        self.writer.write(message)
-        await self.writer.drain()
-
-
-    async def process_command(self, command: str, metadata: str | None = None) -> None:
         if command == 'ON':
-            print('Lantern is on')
+            await self.send_message(writer, 'Lantern is ON\n')
         elif command == 'OFF':
-            print('Lantern is off')
-            await self.send_command('OFF')
-            self.writer.close()
-            await self.writer.wait_closed()
+            await self.send_message(writer, 'Lantern is OFF\n')
+           
+            writer.close() # close connection after lantern is OFF
+            await writer.wait_closed()
         elif command == 'COLOR':
             self.color = metadata
-            print(f'Lantern color now is {self.color}')
+            await self.send_message(writer, f'Lantern color now is {self.color}\n')
         else:
-            print("Can't process unknown command" )
+            await self.send_message(writer, "Can't process unknown command\n")
 
 
-    async def run(self) -> None:
-        await self.connect()
+    async def run(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        '''
+        Method for receiving data from client
+        '''
         
-        while True:
-            data = await self.reader.readline()
+        await self.send_message(writer, "Please provide data in following format {\"command\":\"your command\", \"metadata\": \"your metadata\"}\n")
+
+        while True:         
+            data = await reader.readline()
             if not data:
                 break
             try:
                 message = json.loads(data.decode())
-                command = message['command']
-                metadata = message['metadata']
-                await self.process_command(command, metadata)
+                command = message.get('command')
+                metadata = message.get('metadata')
+                await self.process_command(writer, command, metadata)
             except Exception as e:
-                print(f'Error while processing message: {e}')
+                await self.send_message(writer, 'Provide some valid data\n')
+                print(f'Exception: {e}')
 
 
 async def main():
     lantern = Lantern()
-    await lantern.run()
+    server = await asyncio.start_server(lantern.run, lantern.host, lantern.port)
+
+    async with server:
+        await server.serve_forever()
 
 
 if __name__ == '__main__':
