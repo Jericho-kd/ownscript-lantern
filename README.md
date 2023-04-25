@@ -37,3 +37,45 @@
 Обязательно наличие инструкции по запуску.
 - Версия Python — 3.7+.
 - Реализация сетевого протокола может быть на aiohttp, tornado или fastapi.
+
+## Установка
+Задание оформлено в виде Docker-контейнера.
+
+Для начала скопируйте репозиторий и перейдите в папку с проектом:
+```
+git clone https://github.com/Jericho-kd/ownscript-lantern.git
+cd ownscript-lantern
+```
+Выполните следующие команды:
+```
+docker build . -t lantern_app
+docker run -p 9999:9999 lantern_app
+```
+Сервер запущен
+
+## Использование
+Откройте терминал и выполните команду:
+```
+telnet 0.0.0.0 9999
+```
+(Вместо адреса 127.0.0.1 используется адрес 0.0.0.0 из-за проблем с мэппингом портов и адресов в Docker-контейнере)
+
+После удачного подключения вы увидите следующее сообщение:
+```
+Trying 0.0.0.0...
+Connected to 0.0.0.0.
+Escape character is '^]'.
+Please provide data in the following format {"command":"your command", "metadata": "your metadata"}.
+Field 'metadata' is optional (only use to switch lantern colors).
+```
+Вы подключились к серверу. Теперь можно отправлять на сервер команды следующего формата:
+```
+{"command":"ON"}  - включить фонарь
+{"command":"OFF"} - выключить фонарь
+{"command":"COLOR", "metadata":"Yellow"} - сменить цвет фонаря
+{"command":"END"} - отключиться от сервера
+```
+(Поле "metadata" в командах ON, OFF, END опционально)
+
+## Тестирование
+Находится в разработке
