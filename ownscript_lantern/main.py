@@ -1,8 +1,11 @@
-import asyncio
-from lantern import run_server
+from fastapi import FastAPI
 
-async def main():
-    await run_server()
+from pages.router import router as router_pages
+from lantern.router import router as router_lantern
 
-if __name__ == "__main__":
-    asyncio.run(main())
+app = FastAPI(
+    title="Lantern App"
+)
+
+app.include_router(router_pages)
+app.include_router(router_lantern)
