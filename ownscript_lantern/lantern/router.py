@@ -1,15 +1,16 @@
-from dataclasses import dataclass
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-# from fastapi.responses import HTMLResponse
-import json
+from dataclasses import dataclass, field
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 
-app = FastAPI()
+router = APIRouter(
+    prefix="/lantern",
+    tags=["Lantern"]
+)
 
 
 @dataclass
 class ConnectionManager:
-    active_connections: list[WebSocket] = []
+    active_connections: list[WebSocket] = field(default_factory=list)
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
@@ -25,7 +26,7 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-@app.websocket("/ws/{client_id}")
+@router.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
     await manager.connect(websocket)
 
