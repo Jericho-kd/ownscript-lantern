@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
+from ownscript_lantern.lantern_handler import LanternHandler
+
 
 router = APIRouter(
     prefix="/lantern",
@@ -24,7 +26,7 @@ class ConnectionManager:
 
 
 manager = ConnectionManager()
-
+lantern = LanternHandler()
 
 @router.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
@@ -33,6 +35,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
     try:
         while True:
             data = await websocket.receive_json()
+            # lantern.dispatch()
             await manager.send_message(data, websocket)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
