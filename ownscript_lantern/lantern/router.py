@@ -22,7 +22,7 @@ class ConnectionManager:
         self.active_connections.remove(websocket)
 
     async def send_message(self, message: str, websocket: WebSocket):
-        await websocket.send_json(message)
+        await websocket.send_text(message)
 
 
 manager = ConnectionManager()
@@ -34,8 +34,9 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
 
     try:
         while True:
-            data = await websocket.receive_json()
-            # lantern.dispatch()
-            await manager.send_message(data, websocket)
+            data = await websocket.receive_text()
+            print(data)
+            result = await lantern.dispatch(data)
+            await manager.send_message(result, websocket)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
