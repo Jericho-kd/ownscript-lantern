@@ -45,18 +45,24 @@
 Для начала скопируйте репозиторий и перейдите в папку с проектом:
 ```
 git clone https://github.com/Jericho-kd/ownscript-lantern.git
-cd ownscript-lantern/ownscript_lantern
+cd ownscript-lantern
 ```
 
 ## Использование
-Выполните следующую команду для запуска сервера:
+Выполните следующие команды для запуска сервера:
 ```
-python3 main.py
+docker build -t lantern_app .
+docker run -p 9999:9999 lantern_app
 ```
+Для запуска сервера внутри контейнера приходится использовать адрес 0.0.0.0. Проблема с портами описана в одном из обсуждений на StackOverflow
+> The issue here is that when you specify host="127.0.0.1" to uvicorn, that means you can only access that port from that same machine. Now, when you run outside docker, you are on the same machine, so everything works. But since a docker container is (at least to some degree) a different computer, you need to tell it to allow connections from outside the container as well. To do this, switch to host="0.0.0.0", and then you should be able to access your dockerized API on 0.0.0.0:9999.
+>
+
 Откройте окно браузера и введите в адресной строке следующий адрес:
 ```
-http://127.0.0.1:9999/pages/lantern
+http://0.0.0.0:9999/pages/lantern
 ```
+
 Откроется окно управления фонарем. Теперь можно отправлять на сервер команды следующего формата:
 ```
 {"command":"ON"}  - включить фонарь

@@ -1,14 +1,21 @@
 FROM python:3.10-slim
 
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE=1
+RUN mkdir /app
 
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED=1
+COPY . /app
+COPY pyproject.toml /app
 
 WORKDIR /app
-COPY . /app
+RUN touch README.md
+
+ENV PYTHONPATH=${PYTHONPATH}:${PWD}
+ 
+RUN pip3 install poetry
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-dev
 
 EXPOSE 9999
 
-ENTRYPOINT ["python3", "ownscript_lantern/main.py"]
+WORKDIR /app/ownscript_lantern
+
+ENTRYPOINT ["python3", "main.py"]
